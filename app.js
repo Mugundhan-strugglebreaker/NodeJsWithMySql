@@ -1,33 +1,56 @@
 const express = require('express')
+const res = require('express/lib/response')
 const mysql = require('mysql')
 
 const app = express()
 
 app.use(express.json())
+// Add headers before the routes are defined
+app.use(function (req, res, next) {
+
+    // Website you wish to allow to connect
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+
+    // Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+
+    // Request headers you wish to allow
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+
+    // Set to true if you need the website to include cookies in the requests sent
+    // to the API (e.g. in case you use sessions)
+    res.setHeader('Access-Control-Allow-Credentials', true);
+
+    // Pass to next layer of middleware
+    next();
+});
 
 //Connecting Database
 const db = mysql.createConnection({
     host: "localhost",
     user: "root",
     password: "",
-    database : "nodemysql"
+    database : "sample"
 })
-db.connect((err)=>{
+db.connect((err) =>{
     if(err){
-        console.log("Error in Connecting Mysql")
+        console.log("Error in Connecting Database");
+    }else{
+    console.log('Connected Successfully');
     }
-    console.log("Mysql Connected Successfully")
 })
 
 //Creating Database
 app.get("/createDb",(req,res)=>{
-    let sql = 'CREATE DATABASE nodemysql'
+    let sql = 'CREATE DATABASE sample1'
     db.query(sql,(err,result)=>{
         if(err){
-            res.send("Error in Db",err)
+            res.send(err)
+            res.end()
+        }else{
+            res.send(result)
+            res.end()
         }
-        res.send(result)
-        res.end()
     })
 })
 //Creating Table
@@ -39,13 +62,16 @@ app.get("/createTable",(req,res)=>{
             db.query(sql,(err,result)=>{
             if(err){
                 res.send(err)
+                res.end()
+            }else{
+                res.send(result)
+                res.end()
             }
+            })
+        }else{
             res.send(result)
             res.end()
-            })
         }
-        res.send(result)
-        res.end()
     })
     
    // res.send("Hi")
@@ -58,9 +84,10 @@ app.post("/createUser",(req,res)=>{
         if(err){
             res.send(err)
             res.end()
-        }
+        }else{
         res.send(result)
         res.end()
+        }
     })
 })
 // Update a User
@@ -95,7 +122,7 @@ app.delete("/deleteUser/:id",(req,res)=>{
 app.get("/getUser/:id",(req,res)=>{
     console.log(req.params.id)
     id = req.params.id;
-    let sql = 'SELECT * from user where id ='+id;
+    let sql = 'SELECT * from user';
     let query = db.query(sql,(err,result)=>{
         if(err){
             res.send(err)
@@ -105,6 +132,11 @@ app.get("/getUser/:id",(req,res)=>{
         res.end()
     })
 })
-app.listen(3000,()=>{
-    console.log("Server Started at port no:3000")
+
+app.listen(9000,(err)=>{
+    if(err){
+        console.log("Error in Connecting server")
+    }
+    console.log("Server Started at port no:9000")
+    
 })
